@@ -1,0 +1,11 @@
+pytest
+pytest-cov
+pytest-mock
+pytest-xdist
+playwright
+pytest-playwright
+locust
+pre-commit
+pandas
+plotly
+scikit-learn

@@ -1,0 +1,10 @@
+__pycache__/
+.pytest_cache/
+.coverage
+.venv/
+env/
+playwright-report/
+test-results/
+*.pyc
+.ipynb_checkpoints/
+fb_news_comments_1000K_hashed.csv
