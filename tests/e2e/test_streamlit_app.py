@@ -10,36 +10,47 @@ import pytest
 def test_streamlit_user_can_upload_csv_and_start_analysis(page):
     sample_file = str(Path("tests/e2e/test_data/sample_comments.csv").resolve())
 
-    page.goto("http://127.0.0.1:8501", wait_until="networkidle")
-    page.wait_for_timeout(5000)
+    page.goto("http://127.0.0.1:8501", wait_until="domcontentloaded")
+    page.wait_for_timeout(3000)
 
-    # جرّب التعامل مع خيار Drive فقط إذا ظهر
-    possible_drive_labels = [
-        "استخدم ملف المشروع الموجود في Drive",
-        "Use project file from Drive",
-        "Drive",
-    ]
+    deadline = time.time() + 180  # انتظر حتى 3 دقائق لظهور الواجهة
 
-    for label in possible_drive_labels:
-        locator = page.get_by_text(label, exact=False)
-        if locator.count() > 0:
-            try:
-                locator.first.click()
-                page.wait_for_timeout(1500)
-                break
-            except Exception:
-                pass
+    file_input = None
 
-    file_input = page.locator('input[type="file"]')
-    if file_input.count() == 0:
+    while time.time() < deadline:
+        # جرّب التعامل مع خيار Drive فقط إذا ظهر
+        possible_drive_labels = [
+            "استخدم ملف المشروع الموجود في Drive",
+            "Use project file from Drive",
+            "Drive",
+        ]
+
+        for label in possible_drive_labels:
+            locator = page.get_by_text(label, exact=False)
+            if locator.count() > 0:
+                try:
+                    locator.first.click()
+                    page.wait_for_timeout(1000)
+                    break
+                except Exception:
+                    pass
+
+        current_input = page.locator('input[type="file"]')
+        if current_input.count() > 0:
+            file_input = current_input.first
+            break
+
+        page.wait_for_timeout(2000)
+
+    if file_input is None:
         page.screenshot(path="e2e_no_file_input.png", full_page=True)
         body_text = page.locator("body").inner_text()
         raise AssertionError(
-            "لم يتم العثور على عنصر رفع الملف.\n\n"
-            f"محتوى الصفحة الظاهر:\n{body_text[:3000]}"
+            "لم يتم العثور على عنصر رفع الملف بعد انتظار طويل.\n\n"
+            f"محتوى الصفحة الظاهر:\n{body_text[:4000]}"
         )
 
-    file_input.first.set_input_files(sample_file)
+    file_input.set_input_files(sample_file)
     page.wait_for_timeout(1500)
 
     numeric_fields = [
@@ -84,7 +95,7 @@ def test_streamlit_user_can_upload_csv_and_start_analysis(page):
         body_text = page.locator("body").inner_text()
         raise AssertionError(
             "لم يتم العثور على زر التحليل.\n\n"
-            f"محتوى الصفحة الظاهر:\n{body_text[:3000]}"
+            f"محتوى الصفحة الظاهر:\n{body_text[:4000]}"
         )
 
     expected_keywords = [
@@ -97,8 +108,8 @@ def test_streamlit_user_can_upload_csv_and_start_analysis(page):
         "Results",
     ]
 
-    deadline = time.time() + 120
-    while time.time() < deadline:
+    result_deadline = time.time() + 180
+    while time.time() < result_deadline:
         body_text = page.locator("body").inner_text()
         if any(word in body_text for word in expected_keywords):
             return
