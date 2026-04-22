@@ -9,3 +9,8 @@ pre-commit
 pandas
 plotly
 scikit-learn
+hdbscan
+umap-learn
+bertopic
+streamlit
+sentence-transformers
