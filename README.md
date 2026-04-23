@@ -131,6 +131,8 @@ locust -f performance/locustfile.py
 ```bash
 pytest --cov=core --cov=tests
 
+![نتيجة التغطية](doc/screenshots/coverage_result.jpeg)
+
 
 ثم يتم فتح واجهة Locust ووضع الـ host بالشكل التالي:
 
